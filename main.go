@@ -38,6 +38,11 @@ type AuthRequest struct {
 	Password string `json:"password"`
 }
 
+type ParticipantMessage struct {
+	Type         string   `json:"type"`
+	Participants []string `json:"participants"`
+}
+
 func main() {
 	db, err := sql.Open("sqlite", "holler.db")
 	if err != nil {
@@ -204,7 +209,15 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 
 	client := &Client{conn: conn, user: user}
 	s.clients.Store(client, true)
-	defer s.clients.Delete(client)
+
+	// Broadcast updated participant list when user joins
+	s.broadcastParticipants()
+
+	defer func() {
+		s.clients.Delete(client)
+		// Broadcast updated participant list when user leaves
+		s.broadcastParticipants()
+	}()
 
 	for {
 		messageType, p, err := conn.ReadMessage()
@@ -231,6 +244,32 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 	}
+}
+
+func (s *Server) broadcastParticipants() {
+	participants := []string{}
+	s.clients.Range(func(k, v interface{}) bool {
+		client := k.(*Client)
+		participants = append(participants, client.user.Username)
+		return true
+	})
+
+	message := ParticipantMessage{
+		Type:         "participants",
+		Participants: participants,
+	}
+
+	messageJSON, err := json.Marshal(message)
+	if err != nil {
+		log.Printf("Error marshaling participants: %v", err)
+		return
+	}
+
+	s.clients.Range(func(k, v interface{}) bool {
+		client := k.(*Client)
+		client.conn.WriteMessage(websocket.TextMessage, messageJSON)
+		return true
+	})
 }
 
 func (s *Server) corsMiddleware(next http.HandlerFunc) http.HandlerFunc {

@@ -8,6 +8,7 @@ class HollerApp {
         this.checkSession();
         this.reconnectAttempts = 0;
         this.maxReconnectDelay = 30000; // Max 30 seconds
+        this.participants = new Set();
     }
 
     async checkSession() {
@@ -166,6 +167,15 @@ class HollerApp {
             if (event.data instanceof Blob) {
                 const audio = new Audio(URL.createObjectURL(event.data));
                 await audio.play();
+            } else {
+                try {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'participants') {
+                        this.updateParticipants(message.participants);
+                    }
+                } catch (e) {
+                    console.error('Failed to parse message:', e);
+                }
             }
         };
     }
@@ -186,11 +196,53 @@ class HollerApp {
         document.getElementById('status').textContent = status;
     }
 
+    updateParticipants(participants) {
+        const container = document.getElementById('participants');
+        container.innerHTML = '';
+        this.participants = new Set(participants);
+
+        participants.forEach(username => {
+            this.addParticipant(username);
+        });
+    }
+
+    createSVGAvatar(username) {
+        const color = this.getUserColor(username);
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('class', 'participant-avatar');
+        svg.setAttribute('viewBox', '0 0 60 60');
+
+        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        circle.setAttribute('cx', '30');
+        circle.setAttribute('cy', '30');
+        circle.setAttribute('r', '30');
+        circle.setAttribute('fill', color);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', '30');
+        text.setAttribute('y', '38');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('fill', 'white');
+        text.setAttribute('font-size', '24');
+        text.textContent = username[0].toUpperCase();
+
+        svg.appendChild(circle);
+        svg.appendChild(text);
+        return svg;
+    }
+
     addParticipant(username) {
         const div = document.createElement('div');
         div.className = 'participant';
-        div.style.backgroundColor = this.getUserColor(username);
-        div.textContent = username[0].toUpperCase();
+
+        const avatar = this.createSVGAvatar(username);
+        div.appendChild(avatar);
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'participant-name';
+        nameSpan.textContent = username;
+        div.appendChild(nameSpan);
+
         document.getElementById('participants').appendChild(div);
     }
 

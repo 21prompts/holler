@@ -71,3 +71,15 @@ Transferred171 B (11 B size)
 Referrer Policystrict-origin-when-cross-origin
 DNS ResolutionSystem
 ```
+
+## Prompt 6
+
+Let's implement the following features:
+
+```
+- [ ] Broadcast fresh list to all participants when user joins chat
+- [ ] Broadcast fresh list to all participants when user leaves chat
+- [ ] Rounded color-filled svg avatars for chat participants
+- [ ] User name is displayed below the avatar
+- [ ] Use colorhash function to derive consistent avatar colors
+```
