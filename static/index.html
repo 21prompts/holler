@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Holler</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="statusBar">
+        <span id="status">Disconnected</span>
+        <span id="username"></span>
+    </div>
+
+    <div class="content" id="participants">
+        <!-- Participants will be added here dynamically -->
+    </div>
+
+    <div class="actionBar">
+        <button id="pttButton" class="ptt-button">
+            <span class="button-label">Hold to Talk</span>
+        </button>
+    </div>
+
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-form">
+            <input type="text" id="usernameInput" placeholder="Username">
+            <input type="password" id="passwordInput" placeholder="Password">
+            <button id="loginButton">Login</button>
+            <button id="registerButton">Register</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
