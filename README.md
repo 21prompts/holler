@@ -2,6 +2,16 @@
 
 Self-hosted Walkie-Talkie for Family and Friends
 
+![Screenshot 2025-02-01 at 20-30-26 Holler](https://github.com/user-attachments/assets/78dfb134-716a-4605-aa4c-5c11a6ce5aad)
+
+## 21 Prompts?
+
+Holler was created in a matter of hours during a handful sessions
+of using Github Copilot with Anthropic's Claude 3.5 Sonnet model.
+You'll find every prompt used to get to this point in PROMPTS.md.
+
+This is not production-ready software, it is a curiosity or a toy.
+
 ## Features
 
 - 🔐 User authentication with registration and login
