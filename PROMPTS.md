@@ -158,3 +158,18 @@ Let's review our stylesheet and ensure we have a consistent design across the ap
 ## Prompt 18
 
 Before the start button modal is displayed, there's a flash of controls below. Let's fix this by ensuring the controls are hidden until the audio context is started.
+
+## Prompt 19
+
+Go through the code, markup and config files I've added in context carefully:
+
+- main.go
+- static/index.html
+- static/app.js
+- static/app.css
+- Procfile
+- Caddyfile
+
+Make notes about the features we have implemented so far and document them in README.md.
+
+Also add a section below on how to compile the app and run it locally.

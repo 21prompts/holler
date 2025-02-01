@@ -4,24 +4,68 @@ Self-hosted Walkie-Talkie for Family and Friends
 
 ## Features
 
-- [x] Mobile-first design
-- [x] Single-binary web app
-- [x] Serve index.html, app.js, and css.js from "static/" dir in project root
-- [x] Modern CSS3 and transforms for animating button pushes
-- [x] One round PTT button at the bottom of the screen
-- [x] Fixed actionBar and statusBar
-- [x] SQLite to store usernames and scrypt hashed passwords
-- [x] Register with username and password before joining chat
-- [x] Record audio when PTT button is tapped or clicked
-- [x] Continue recording while the button is pressed
-- [x] Send audio (opus, low bit rate) to server when released
-- [x] Store incoming message as blob in the database
-- [x] Broadcast the clip to all other participants
-- [x] Broadcast fresh list to all participants when user joins chat
-- [x] Broadcast fresh list to all participants when user leaves chat
-- [x] Rounded color-filled svg avatars for chat participants
-- [x] User name is displayed below the avatar
-- [x] Use colorhash function to derive consistent avatar colors
-- [ ] Bounce avatar when participant's message is playing
-- [ ] Stop bouncing avatar when participant's message is done playing
-- [ ] Enlarge username to 130% when participant is speaking
+- 🔐 User authentication with registration and login
+- 👥 Real-time participant presence
+- 🎙️ Push-to-talk voice communication
+- 🔇 Per-user muting
+- 💬 Message history with catch-up playback
+- 🎨 Unique color-coded avatars for each user
+- 🔄 Automatic reconnection with exponential backoff
+- 📱 Mobile-friendly interface
+- 🔒 Secure password hashing and session management
+- 🎛️ User settings (password change, logout)
+- 🚦 Connection status indicators
+- 💾 Persistent message storage using SQLite
+
+## Local Development Setup
+
+1. Install prerequisites:
+   - Go 1.16 or later
+   - Caddy web server (optional, for HTTPS)
+
+2. Clone the repository:
+
+   ```bash
+   git clone https://github.com/21prompts/holler.git
+   cd holler
+   ```
+
+3. Install Go dependencies:
+
+   ```bash
+   go mod tidy
+   ```
+
+4. Run the application:
+
+   ```bash
+   # Using the Procfile (if you have foreman/goreman installed)
+   foreman start
+
+   # Or run directly
+   go run .
+   ```
+
+5. For HTTPS setup with Caddy:
+   - Copy `Caddyfile.sample` to `Caddyfile`
+   - Replace `hostname.your-tailnet.ts.net` with your domain
+   - Run Caddy: `caddy run`
+
+The app will be available at:
+
+- HTTP: <http://localhost:8522>
+- HTTPS (if using Caddy): <https://your-domain>
+
+## Architecture
+
+- Backend: Go with WebSocket support
+- Frontend: Vanilla JavaScript
+- Database: SQLite for persistent storage
+- Audio: WebM/Opus codec for efficient voice transmission
+
+## Security Notes
+
+- Passwords are hashed using bcrypt
+- Sessions are managed via secure cookies
+- All WebSocket communications are binary for audio data
+- HTTPS required for production use (setup via Caddy)
