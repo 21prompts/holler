@@ -272,9 +272,14 @@ body:not(.app-ready) .actionBar {
         inset 0 -2px 3px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
     transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
 }
 
-.ptt-button:active {
+.ptt-button:active,
+.ptt-button.pressed {
     transform: translateY(4px);
     background: var(--button-pressed);
     box-shadow:

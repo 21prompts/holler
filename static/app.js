@@ -55,22 +55,47 @@ class HollerApp {
     setupAppUI() {
         this.pttButton = document.getElementById('pttButton');
 
-        // Make PTT button focusable
+        // Mouse events
+        this.pttButton.addEventListener('mousedown', () => {
+            this.pttButton.classList.add('pressed');
+            this.startRecording();
+        });
+
+        this.pttButton.addEventListener('mouseup', () => {
+            this.pttButton.classList.remove('pressed');
+            this.stopRecording();
+        });
+
+        this.pttButton.addEventListener('mouseleave', () => {
+            if (this.pttButton.classList.contains('pressed')) {
+                this.pttButton.classList.remove('pressed');
+                this.stopRecording();
+            }
+        });
+
+        // Touch events
+        this.pttButton.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            this.pttButton.classList.add('pressed');
+            this.startRecording();
+        });
+
+        this.pttButton.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            this.pttButton.classList.remove('pressed');
+            this.stopRecording();
+        });
+
+        this.pttButton.addEventListener('touchcancel', (e) => {
+            e.preventDefault();
+            this.pttButton.classList.remove('pressed');
+            this.stopRecording();
+        });
+
+        // Make PTT button focusable and add ARIA attributes
         this.pttButton.setAttribute('tabindex', '0');
         this.pttButton.setAttribute('role', 'button');
         this.pttButton.setAttribute('aria-label', 'Push to talk');
-
-        // Touch events
-        this.pttButton.addEventListener('mousedown', () => this.startRecording());
-        this.pttButton.addEventListener('mouseup', () => this.stopRecording());
-        this.pttButton.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            this.startRecording();
-        });
-        this.pttButton.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.stopRecording();
-        });
 
         document.getElementById('startButton').addEventListener('click', async () => {
             await this.initializeAudio();
@@ -681,11 +706,11 @@ class HollerApp {
     }
 
     setupKeyboardNavigation() {
-        // Handle PTT with spacebar
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space' && !this.keyboardState.isSpacebarPressed && document.activeElement === this.pttButton) {
                 e.preventDefault();
                 this.keyboardState.isSpacebarPressed = true;
+                this.pttButton.classList.add('pressed');
                 this.startRecording();
             }
         });
@@ -694,6 +719,7 @@ class HollerApp {
             if (e.code === 'Space' && this.keyboardState.isSpacebarPressed) {
                 e.preventDefault();
                 this.keyboardState.isSpacebarPressed = false;
+                this.pttButton.classList.remove('pressed');
                 this.stopRecording();
             }
         });

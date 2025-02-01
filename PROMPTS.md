@@ -182,3 +182,7 @@ Let's review the ui and ensure it can be navigated with only keyboard. Add keybo
 - The "Start" modal should be dismissed when the user presses "Enter" after login and audio context is started.
 - Pressing "Spacebar" on the PTT button should start recording audio and continue recording while the button is pressed. Release the button to send the audio to server.
 - Ensure tab navigation is possible and focus is visible on the focused element.
+
+## Prompt 21
+
+The PTT button records audio and transmits, but does not animate the push-down on mobile or when using keyboard, let's fix that.
