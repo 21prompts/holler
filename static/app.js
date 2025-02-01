@@ -6,11 +6,15 @@ class HollerApp {
         this.audioContext = null;
         this.setupAuthUI();  // Set up auth UI immediately
         this.checkSession();
+        this.reconnectAttempts = 0;
+        this.maxReconnectDelay = 30000; // Max 30 seconds
     }
 
     async checkSession() {
         try {
-            const response = await fetch('/api/session');
+            const response = await fetch('/api/session', {
+                credentials: 'include' // Add this to include cookies
+            });
             if (response.ok) {
                 const user = await response.json();
                 this.onLoginSuccess(user);
@@ -103,6 +107,7 @@ class HollerApp {
             const response = await fetch('/api/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // Add this to include cookies
                 body: JSON.stringify({ username, password })
             });
 
@@ -140,13 +145,21 @@ class HollerApp {
 
     connectWebSocket(username) {
         this.ws = new WebSocket(`ws://${location.host}/ws?username=${username}`);
+        this.updateStatus('Connecting...');
 
         this.ws.onopen = () => {
-            document.getElementById('status').textContent = 'Connected';
+            this.updateStatus('Connected');
+            this.reconnectAttempts = 0; // Reset attempts on successful connection
         };
 
         this.ws.onclose = () => {
-            document.getElementById('status').textContent = 'Disconnected';
+            this.updateStatus('Disconnected');
+            this.scheduleReconnect();
+        };
+
+        this.ws.onerror = (error) => {
+            this.updateStatus('Connection Error');
+            console.error('WebSocket error:', error);
         };
 
         this.ws.onmessage = async (event) => {
@@ -155,6 +168,22 @@ class HollerApp {
                 await audio.play();
             }
         };
+    }
+
+    scheduleReconnect() {
+        if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+            const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), this.maxReconnectDelay);
+            this.updateStatus(`Reconnecting in ${Math.round(delay / 1000)}s...`);
+
+            setTimeout(() => {
+                this.reconnectAttempts++;
+                this.connectWebSocket(document.getElementById('username').textContent);
+            }, delay);
+        }
+    }
+
+    updateStatus(status) {
+        document.getElementById('status').textContent = status;
     }
 
     addParticipant(username) {

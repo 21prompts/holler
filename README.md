@@ -17,7 +17,12 @@ Self-hosted Walkie-Talkie for Family and Friends
 - [x] Send audio (opus, low bit rate) to server when released
 - [x] Store incoming message as blob in the database
 - [x] Broadcast the clip to all other participants
-- [ ] Rounded avatars of voice chat participants
-- [ ] Bounce avatar when participant is speaking
-- [ ] Display username when participant is speaking
+- [ ] Broadcast username to others when user joins chat
+- [ ] Broadcast username to others when user leaves chat
 - [ ] Broadcast username along with audio clip
+- [ ] Rounded color-filled svg avatars for voice chat participants
+- [ ] User name is displayed below the avatar
+- [ ] Use colorhash for consistent avatar colors
+- [ ] Bounce avatar when participant's message is playing
+- [ ] Stop bouncing avatar when participant's message is done playing
+- [ ] Enlarge username to 130% when participant is speaking

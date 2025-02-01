@@ -49,3 +49,9 @@ We have few issues to address:
 ## Prompt 3
 
 The login and register buttons   have stopped working, let's investogate what happened and fix it.
+
+## Prompt 4
+
+We want to use exponential backoff for reconnecting to the websocket server. Let's implement this in app.js. Display the status of the connection in the statusBar.
+
+The app still demands login after page reload, we need to investigate our code for the cause and fix it.
