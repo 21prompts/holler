@@ -138,3 +138,7 @@ Let's focus on the UI:
 
 - Remove the feature to change username from frontend and backend.
 - Instead of a different emoji to indicate muted user, keep the mute button visible and change its color to red when muted - it should be usable on mobile as well.
+
+## Prompt 15
+
+Let's add a "Catch up" view to show chronological list of recent 10 messages. Each message should have the avatar of the sender, the username. When clicked, use the same websocket connection to play the message, highlighting the avatar of the sender. Take a 500ms pause before playing the next message until the latest message is played or the user stops the playback.

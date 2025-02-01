@@ -26,6 +26,7 @@
             <div class="status-led" id="statusLed"></div>
             <span id="status">Disconnected</span>
         </div>
+        <button id="catchUpButton" class="catch-up-button">Catch Up</button>
         <div class="user-info" id="userInfo">
             <svg id="toolbarAvatar" class="toolbar-avatar"></svg>
             <span id="username"></span>
@@ -58,6 +59,18 @@
 
     <div class="start-modal" id="startModal" style="display: none;">
         <button class="start-button" id="startButton">Start App</button>
+    </div>
+
+    <div class="catch-up-modal" id="catchUpModal">
+        <div class="catch-up-content">
+            <div class="catch-up-header">
+                <h2>Recent Messages</h2>
+                <button class="close-button" id="closeCatchUp">×</button>
+            </div>
+            <div class="messages-list" id="messagesList">
+                <!-- Messages will be added here dynamically -->
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>

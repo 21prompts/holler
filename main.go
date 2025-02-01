@@ -49,6 +49,12 @@ type AudioMessage struct {
 	Audio    []byte `json:"audio"`
 }
 
+type AudioMessageResponse struct {
+	ID        int64  `json:"id"`
+	Username  string `json:"username"`
+	Timestamp string `json:"timestamp"`
+}
+
 func main() {
 	db, err := sql.Open("sqlite", "holler.db")
 	if err != nil {
@@ -93,6 +99,8 @@ func main() {
 	http.HandleFunc("/ws", server.handleWebSocket)
 	http.HandleFunc("/api/settings/password", server.corsMiddleware(server.handleChangePassword))
 	http.HandleFunc("/api/logout", server.corsMiddleware(server.handleLogout))
+	http.HandleFunc("/api/messages/recent", server.corsMiddleware(server.handleRecentMessages))
+	http.HandleFunc("/api/messages/audio", server.corsMiddleware(server.handleGetAudioMessage))
 
 	log.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -348,6 +356,57 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 	session.Options.MaxAge = -1
 	session.Save(r, w)
 	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) handleRecentMessages(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	rows, err := s.db.Query(`
+		SELECT audio_messages.id, users.username, audio_messages.timestamp 
+		FROM audio_messages 
+		JOIN users ON users.id = audio_messages.user_id 
+		ORDER BY audio_messages.timestamp DESC 
+		LIMIT 10
+	`)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var messages []AudioMessageResponse
+	for rows.Next() {
+		var msg AudioMessageResponse
+		err := rows.Scan(&msg.ID, &msg.Username, &msg.Timestamp)
+		if err != nil {
+			continue
+		}
+		messages = append(messages, msg)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(messages)
+}
+
+func (s *Server) handleGetAudioMessage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	messageID := r.URL.Query().Get("id")
+	var audioData []byte
+	err := s.db.QueryRow("SELECT audio_data FROM audio_messages WHERE id = ?", messageID).Scan(&audioData)
+	if err != nil {
+		http.Error(w, "Message not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "audio/webm")
+	w.Write(audioData)
 }
 
 func hashPassword(password string) []byte {

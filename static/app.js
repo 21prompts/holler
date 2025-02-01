@@ -12,6 +12,8 @@ class HollerApp {
         this.currentSpeaker = null;
         this.setupContextMenu();
         this.mutedUsers = new Set();
+        this.isPlayingCatchUp = false;
+        this.setupCatchUpUI();
     }
 
     async checkSession() {
@@ -456,6 +458,112 @@ class HollerApp {
         const toolbarAvatar = document.getElementById('toolbarAvatar');
         toolbarAvatar.innerHTML = '';
         toolbarAvatar.appendChild(avatar);
+    }
+
+    setupCatchUpUI() {
+        const catchUpButton = document.getElementById('catchUpButton');
+        const modal = document.getElementById('catchUpModal');
+        const closeButton = document.getElementById('closeCatchUp');
+
+        catchUpButton.addEventListener('click', () => {
+            this.loadRecentMessages();
+            modal.style.display = 'flex';
+        });
+
+        closeButton.addEventListener('click', () => {
+            modal.style.display = 'none';
+            this.stopCatchUp();
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                this.stopCatchUp();
+            }
+        });
+    }
+
+    async loadRecentMessages() {
+        try {
+            const response = await fetch('/api/messages/recent');
+            const messages = await response.json();
+
+            const messagesList = document.getElementById('messagesList');
+            messagesList.innerHTML = '';
+
+            messages.forEach(msg => {
+                const div = document.createElement('div');
+                div.className = 'message-item';
+                div.dataset.messageId = msg.id;
+
+                const avatar = this.createSVGAvatar(msg.username);
+                avatar.style.width = '40px';
+                avatar.style.height = '40px';
+
+                const info = document.createElement('div');
+                info.className = 'message-info';
+
+                const username = document.createElement('div');
+                username.className = 'message-username';
+                username.textContent = msg.username;
+
+                const time = document.createElement('div');
+                time.className = 'message-time';
+                time.textContent = new Date(msg.timestamp).toLocaleString();
+
+                info.appendChild(username);
+                info.appendChild(time);
+
+                div.appendChild(avatar);
+                div.appendChild(info);
+
+                div.addEventListener('click', () => this.startCatchUp(msg.id));
+                messagesList.appendChild(div);
+            });
+        } catch (err) {
+            console.error('Error loading messages:', err);
+        }
+    }
+
+    async startCatchUp(messageId) {
+        if (this.isPlayingCatchUp) {
+            this.stopCatchUp();
+            return;
+        }
+
+        const messagesList = document.getElementById('messagesList');
+        const items = Array.from(messagesList.getElementsByClassName('message-item'));
+        const startIndex = items.findIndex(item => item.dataset.messageId === messageId.toString());
+
+        this.isPlayingCatchUp = true;
+
+        for (let i = startIndex; i >= 0 && this.isPlayingCatchUp; i--) {
+            const item = items[i];
+            const msgId = item.dataset.messageId;
+
+            // Remove playing class from all items
+            items.forEach(it => it.classList.remove('playing'));
+            // Add playing class to current item
+            item.classList.add('playing');
+
+            try {
+                const response = await fetch(`/api/messages/audio?id=${msgId}`);
+                const blob = await response.blob();
+                await this.playAudioMessage(blob, item.querySelector('.message-username').textContent);
+                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms pause
+            } catch (err) {
+                console.error('Error playing message:', err);
+            }
+        }
+
+        this.isPlayingCatchUp = false;
+        items.forEach(item => item.classList.remove('playing'));
+    }
+
+    stopCatchUp() {
+        this.isPlayingCatchUp = false;
+        const items = document.getElementsByClassName('message-item');
+        Array.from(items).forEach(item => item.classList.remove('playing'));
     }
 }
 
