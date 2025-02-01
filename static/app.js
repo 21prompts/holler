@@ -3,8 +3,23 @@ class HollerApp {
         this.ws = null;
         this.mediaRecorder = null;
         this.audioChunks = [];
-        this.setupUI();
-        this.setupAuth();
+        this.audioContext = null;
+        this.checkSession();
+    }
+
+    async checkSession() {
+        try {
+            const response = await fetch('/api/session');
+            if (response.ok) {
+                const user = await response.json();
+                this.onLoginSuccess(user);
+            } else {
+                document.getElementById('authOverlay').style.display = 'flex';
+            }
+        } catch (err) {
+            console.error('Session check error:', err);
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
     }
 
     setupUI() {
@@ -19,17 +34,28 @@ class HollerApp {
             e.preventDefault();
             this.stopRecording();
         });
-    }
 
-    setupAuth() {
         this.loginButton = document.getElementById('loginButton');
         this.registerButton = document.getElementById('registerButton');
 
         this.loginButton.addEventListener('click', () => this.login());
         this.registerButton.addEventListener('click', () => this.register());
+
+        document.getElementById('startButton').addEventListener('click', () => {
+            this.initializeAudio();
+            document.getElementById('startModal').style.display = 'none';
+        });
+    }
+
+    async initializeAudio() {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        await this.audioContext.resume();
     }
 
     async startRecording() {
+        if (!this.audioContext) {
+            await this.initializeAudio();
+        }
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             this.mediaRecorder = new MediaRecorder(stream, {
@@ -79,9 +105,7 @@ class HollerApp {
 
             if (response.ok) {
                 const user = await response.json();
-                document.getElementById('username').textContent = user.username;
-                document.getElementById('authOverlay').style.display = 'none';
-                this.connectWebSocket(user.username);
+                this.onLoginSuccess(user);
             } else {
                 alert('Login failed');
             }
@@ -145,6 +169,14 @@ class HollerApp {
         }
         const h = hash % 360;
         return `hsl(${h}, 70%, 50%)`;
+    }
+
+    onLoginSuccess(user) {
+        document.getElementById('username').textContent = user.username;
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('startModal').style.display = 'flex';
+        this.setupUI();
+        this.connectWebSocket(user.username);
     }
 }
 

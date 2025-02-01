@@ -8,7 +8,10 @@ import (
 
 	"encoding/json"
 
+	"os"
+
 	_ "github.com/glebarez/go-sqlite"
+	"github.com/gorilla/sessions"
 	"github.com/gorilla/websocket"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -17,6 +20,7 @@ type Server struct {
 	db       *sql.DB
 	upgrader websocket.Upgrader
 	clients  sync.Map
+	store    *sessions.CookieStore
 }
 
 type User struct {
@@ -51,6 +55,7 @@ func main() {
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
+		store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))),
 	}
 
 	// Static files
@@ -59,6 +64,7 @@ func main() {
 	// API endpoints
 	http.HandleFunc("/api/register", server.handleRegister)
 	http.HandleFunc("/api/login", server.handleLogin)
+	http.HandleFunc("/api/session", server.checkSession)
 	http.HandleFunc("/ws", server.handleWebSocket)
 
 	log.Println("Server starting on :8080")
@@ -133,7 +139,26 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// After successful login, create session
+	session, _ := s.store.Get(r, "holler-session")
+	session.Values["userID"] = user.ID
+	session.Values["username"] = user.Username
+	session.Save(r, w)
+
 	json.NewEncoder(w).Encode(user)
+}
+
+func (s *Server) checkSession(w http.ResponseWriter, r *http.Request) {
+	session, _ := s.store.Get(r, "holler-session")
+	if userID, ok := session.Values["userID"].(int64); ok {
+		var user User
+		err := s.db.QueryRow("SELECT id, username FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username)
+		if err == nil {
+			json.NewEncoder(w).Encode(user)
+			return
+		}
+	}
+	http.Error(w, "No session", http.StatusUnauthorized)
 }
 
 func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
