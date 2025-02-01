@@ -1,0 +1,12 @@
+{
+	http_port 8080
+	https_port 8443
+}
+
+https://hostname.your-tailnet.ts.net {
+	encode zstd gzip
+
+	handle /* {
+		reverse_proxy localhost:8522
+	}
+}

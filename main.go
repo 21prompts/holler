@@ -102,8 +102,8 @@ func main() {
 	http.HandleFunc("/api/messages/recent", server.corsMiddleware(server.handleRecentMessages))
 	http.HandleFunc("/api/messages/audio", server.corsMiddleware(server.handleGetAudioMessage))
 
-	log.Println("Server starting on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Server starting on http://localhost:8522/")
+	log.Fatal(http.ListenAndServe(":8522", nil))
 }
 
 func initDB(db *sql.DB) error {
