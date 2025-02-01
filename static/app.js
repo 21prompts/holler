@@ -174,9 +174,6 @@ class HollerApp {
                         case 'speaker':
                             currentSpeaker = message.username;
                             break;
-                        case 'usernameChange':
-                            this.handleUsernameChange(message.oldUsername, message.newUsername);
-                            break;
                     }
                 } catch (e) {
                     console.error('Failed to parse message:', e);
@@ -193,27 +190,6 @@ class HollerApp {
             this.updateStatus('Connection Error');
             console.error('WebSocket error:', error);
         };
-    }
-
-    handleUsernameChange(oldUsername, newUsername) {
-        // Update participant display if needed
-        const container = document.getElementById('participants');
-        const elements = container.getElementsByClassName('participant');
-
-        for (const element of elements) {
-            const nameEl = element.querySelector('.participant-name');
-            if (nameEl && nameEl.textContent === oldUsername) {
-                nameEl.textContent = newUsername;
-                const avatar = element.querySelector('.participant-avatar');
-                avatar.innerHTML = this.createSVGAvatar(newUsername).innerHTML;
-                break;
-            }
-        }
-
-        // If it's the current user, update the toolbar
-        if (document.getElementById('username').textContent === oldUsername) {
-            this.updateUserInfo({ username: newUsername });
-        }
     }
 
     scheduleReconnect() {
@@ -306,11 +282,6 @@ class HollerApp {
             this.toggleMute(username);
         });
         div.appendChild(muteButton);
-
-        const mutedIndicator = document.createElement('div');
-        mutedIndicator.className = 'muted-indicator';
-        mutedIndicator.innerHTML = '🎤';
-        div.appendChild(mutedIndicator);
 
         document.getElementById('participants').appendChild(div);
     }
@@ -431,9 +402,6 @@ class HollerApp {
                 case 'changeAvatar':
                     await this.changeAvatar();
                     break;
-                case 'changeUsername':
-                    await this.changeUsername();
-                    break;
                 case 'changePassword':
                     await this.changePassword();
                     break;
@@ -442,29 +410,6 @@ class HollerApp {
                     break;
             }
         });
-    }
-
-    async changeUsername() {
-        const newUsername = prompt('Enter new username:');
-        if (!newUsername) return;
-
-        try {
-            const response = await fetch('/api/settings/username', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ username: newUsername })
-            });
-
-            if (response.ok) {
-                const user = await response.json();
-                this.updateUserInfo(user);
-            } else {
-                alert('Failed to change username');
-            }
-        } catch (err) {
-            console.error('Error:', err);
-        }
     }
 
     async changePassword() {

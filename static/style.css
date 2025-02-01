@@ -311,42 +311,22 @@ body {
     background: var(--surface-color);
     color: var(--text-primary);
     cursor: pointer;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: opacity 0.2s, transform 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px var(--shadow-color);
+    transition: background-color 0.2s, color 0.2s;
+    /* Remove opacity and transform */
 }
 
-.participant:hover .mute-button {
-    opacity: 1;
-    transform: scale(1);
+.participant.muted .mute-button {
+    background: #e74c3c;
+    color: white;
 }
 
-.muted-indicator {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #e74c3c;
-    font-size: 14px;
-    transform: scale(0);
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
+/* Remove .participant:hover .mute-button rule */
 
-.participant.muted .muted-indicator {
-    transform: scale(1);
-}
-
-.participant.muted .participant-avatar {
-    filter: grayscale(0.5) drop-shadow(0 2px 4px var(--shadow-color));
-}
+/* Remove .muted-indicator styles as we're not using it anymore */
 
 .participant.speaking .participant-avatar {
     animation: bounce 0.6s ease-in-out infinite;

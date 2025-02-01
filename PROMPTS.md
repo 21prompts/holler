@@ -133,3 +133,8 @@ Let's focus on the UI:
 - Add required functionality to mute and unmute participants.
 - Indicate muted participants with a red "Muted" mic icon emoji next to their name
 - Finally, review the animations and prefer smooth animations that don''t change the layout of the page.
+
+## Prompt 14
+
+- Remove the feature to change username from frontend and backend.
+- Instead of a different emoji to indicate muted user, keep the mute button visible and change its color to red when muted - it should be usable on mobile as well.
