@@ -740,3 +740,46 @@ button:focus {
 .auth-form button {
     transition: all 0.2s ease-out;
 }
+
+/* Keyboard navigation styles */
+:focus-visible {
+    outline: 3px solid var(--primary-light);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-sm);
+}
+
+/* Remove default focus styles */
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+.ptt-button:focus-visible {
+    outline: 3px solid var(--primary-light);
+    outline-offset: 4px;
+}
+
+.auth-form input:focus-visible {
+    outline: 3px solid var(--primary-light);
+    outline-offset: 0;
+    border-color: var(--primary-color);
+}
+
+.participant:focus-visible,
+.message-item:focus-visible,
+.control-button:focus-visible,
+.mute-button:focus-visible,
+.catch-up-button:focus-visible {
+    outline: 3px solid var(--primary-light);
+    outline-offset: 2px;
+}
+
+/* Ensure all interactive elements have proper focus styles */
+button,
+input,
+[role="button"],
+[tabindex="0"] {
+    &:focus-visible {
+        outline: 3px solid var(--primary-light);
+        outline-offset: 2px;
+    }
+}

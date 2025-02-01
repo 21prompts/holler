@@ -49,16 +49,16 @@
     </div>
 
     <div class="auth-overlay" id="authOverlay">
-        <div class="auth-form">
-            <input type="text" id="usernameInput" placeholder="Username">
-            <input type="password" id="passwordInput" placeholder="Password">
-            <button id="loginButton">Login</button>
-            <button id="registerButton">Register</button>
-        </div>
+        <form class="auth-form" id="authForm">
+            <input type="text" id="usernameInput" placeholder="Username" autocomplete="username">
+            <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password">
+            <button type="submit" id="loginButton">Login</button>
+            <button type="button" id="registerButton">Register</button>
+        </form>
     </div>
 
-    <div class="start-modal" id="startModal" style="display: none;">
-        <button class="start-button" id="startButton">Start App</button>
+    <div class="start-modal" id="startModal" style="display: none;" role="dialog" aria-modal="true">
+        <button class="start-button" id="startButton" autofocus>Start App</button>
     </div>
 
     <div class="catch-up-modal" id="catchUpModal">

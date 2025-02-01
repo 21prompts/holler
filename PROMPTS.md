@@ -173,3 +173,12 @@ Go through the code, markup and config files I've added in context carefully:
 Make notes about the features we have implemented so far and document them in README.md.
 
 Also add a section below on how to compile the app and run it locally.
+
+## Prompt 20
+
+Let's review the ui and ensure it can be navigated with only keyboard. Add keyboard shortcuts for the following:
+
+- After entering username and password, pressing "Enter" should submit the form.
+- The "Start" modal should be dismissed when the user presses "Enter" after login and audio context is started.
+- Pressing "Spacebar" on the PTT button should start recording audio and continue recording while the button is pressed. Release the button to send the audio to server.
+- Ensure tab navigation is possible and focus is visible on the focused element.

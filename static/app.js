@@ -15,6 +15,10 @@ class HollerApp {
         this.isPlayingCatchUp = false;
         this.setupCatchUpUI();
         this.audioInitialized = false;
+        this.keyboardState = {
+            isSpacebarPressed: false
+        };
+        this.setupKeyboardNavigation();
     }
 
     async checkSession() {
@@ -35,15 +39,28 @@ class HollerApp {
     }
 
     setupAuthUI() {
+        const form = document.getElementById('authForm');
         this.loginButton = document.getElementById('loginButton');
         this.registerButton = document.getElementById('registerButton');
 
-        this.loginButton.addEventListener('click', () => this.login());
+        // Handle form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await this.login();
+        });
+
         this.registerButton.addEventListener('click', () => this.register());
     }
 
     setupAppUI() {
         this.pttButton = document.getElementById('pttButton');
+
+        // Make PTT button focusable
+        this.pttButton.setAttribute('tabindex', '0');
+        this.pttButton.setAttribute('role', 'button');
+        this.pttButton.setAttribute('aria-label', 'Push to talk');
+
+        // Touch events
         this.pttButton.addEventListener('mousedown', () => this.startRecording());
         this.pttButton.addEventListener('mouseup', () => this.stopRecording());
         this.pttButton.addEventListener('touchstart', (e) => {
@@ -58,6 +75,8 @@ class HollerApp {
         document.getElementById('startButton').addEventListener('click', async () => {
             await this.initializeAudio();
             document.getElementById('startModal').style.display = 'none';
+            // Focus the PTT button after dismissing the modal
+            this.pttButton.focus();
         });
     }
 
@@ -659,6 +678,36 @@ class HollerApp {
         // Reset UI
         document.getElementById('stopCatchUp').style.display = 'none';
         document.getElementById('playCatchUp').style.display = 'inline-block';
+    }
+
+    setupKeyboardNavigation() {
+        // Handle PTT with spacebar
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !this.keyboardState.isSpacebarPressed && document.activeElement === this.pttButton) {
+                e.preventDefault();
+                this.keyboardState.isSpacebarPressed = true;
+                this.startRecording();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.code === 'Space' && this.keyboardState.isSpacebarPressed) {
+                e.preventDefault();
+                this.keyboardState.isSpacebarPressed = false;
+                this.stopRecording();
+            }
+        });
+
+        // Handle Start modal with Enter key
+        document.getElementById('startButton').addEventListener('keydown', async (e) => {
+            if (e.code === 'Enter') {
+                e.preventDefault();
+                await this.initializeAudio();
+                document.getElementById('startModal').style.display = 'none';
+                // Focus the PTT button after dismissing the modal
+                this.pttButton.focus();
+            }
+        });
     }
 }
 
