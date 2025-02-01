@@ -9,6 +9,7 @@ class HollerApp {
         this.reconnectAttempts = 0;
         this.maxReconnectDelay = 30000; // Max 30 seconds
         this.participants = new Set();
+        this.currentSpeaker = null;
     }
 
     async checkSession() {
@@ -165,13 +166,18 @@ class HollerApp {
 
         this.ws.onmessage = async (event) => {
             if (event.data instanceof Blob) {
-                const audio = new Audio(URL.createObjectURL(event.data));
-                await audio.play();
+                const messageData = new MessageData(event.data);
+                await this.playAudioMessage(messageData.blob, messageData.username);
             } else {
                 try {
                     const message = JSON.parse(event.data);
                     if (message.type === 'participants') {
                         this.updateParticipants(message.participants);
+                    } else if (message.type === 'audio') {
+                        await this.playAudioMessage(
+                            new Blob([message.audio], { type: 'audio/webm;codecs=opus' }),
+                            message.username
+                        );
                     }
                 } catch (e) {
                     console.error('Failed to parse message:', e);
@@ -261,6 +267,40 @@ class HollerApp {
         document.getElementById('startModal').style.display = 'flex';
         this.setupAppUI();  // Only set up app UI after login
         this.connectWebSocket(user.username);
+    }
+
+    setParticipantSpeaking(username, isSpeaking) {
+        const participants = document.getElementById('participants');
+        const elements = participants.getElementsByClassName('participant');
+
+        for (const element of elements) {
+            const nameEl = element.querySelector('.participant-name');
+            if (nameEl && nameEl.textContent === username) {
+                if (isSpeaking) {
+                    element.classList.add('speaking');
+                } else {
+                    element.classList.remove('speaking');
+                }
+                break;
+            }
+        }
+    }
+
+    async playAudioMessage(blob, username) {
+        const audio = new Audio(URL.createObjectURL(blob));
+
+        this.setParticipantSpeaking(username, true);
+
+        audio.addEventListener('ended', () => {
+            this.setParticipantSpeaking(username, false);
+        });
+
+        try {
+            await audio.play();
+        } catch (err) {
+            console.error('Error playing audio:', err);
+            this.setParticipantSpeaking(username, false);
+        }
     }
 }
 

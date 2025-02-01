@@ -83,3 +83,14 @@ Let's implement the following features:
 - [ ] User name is displayed below the avatar
 - [ ] Use colorhash function to derive consistent avatar colors
 ```
+
+## Prompt 7
+
+Let's implement the following features:
+
+```
+- [ ] We want to preserve current functionality, and add the following:
+- [ ] Bounce avatar when participant's message is playing
+- [ ] Stop bouncing avatar when participant's message is done playing
+- [ ] Enlarge username to 130% when participant is speaking
+```

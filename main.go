@@ -43,6 +43,12 @@ type ParticipantMessage struct {
 	Participants []string `json:"participants"`
 }
 
+type AudioMessage struct {
+	Type     string `json:"type"`
+	Username string `json:"username"`
+	Audio    []byte `json:"audio"`
+}
+
 func main() {
 	db, err := sql.Open("sqlite", "holler.db")
 	if err != nil {
@@ -234,11 +240,24 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
+			// Create audio message with username
+			audioMsg := AudioMessage{
+				Type:     "audio",
+				Username: user.Username,
+				Audio:    p,
+			}
+
+			msgJSON, err := json.Marshal(audioMsg)
+			if err != nil {
+				log.Printf("Error marshaling audio message: %v", err)
+				continue
+			}
+
 			// Broadcast to other clients
 			s.clients.Range(func(k, v interface{}) bool {
 				other := k.(*Client)
 				if other != client {
-					other.conn.WriteMessage(websocket.BinaryMessage, p)
+					other.conn.WriteMessage(websocket.TextMessage, msgJSON)
 				}
 				return true
 			})

@@ -78,10 +78,32 @@ body {
     width: 100px;
 }
 
+@keyframes bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.participant.speaking .participant-avatar {
+    animation: bounce 0.6s ease-in-out infinite;
+}
+
+.participant.speaking .participant-name {
+    font-size: 1.3em;
+    transition: font-size 0.2s ease-out;
+}
+
 .participant-avatar {
     width: 60px;
     height: 60px;
     border-radius: 50%;
+    transition: transform 0.2s ease-out;
 }
 
 .participant-name {
@@ -92,6 +114,7 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: font-size 0.2s ease-out;
 }
 
 .auth-overlay {
