@@ -65,7 +65,11 @@
         <div class="catch-up-content">
             <div class="catch-up-header">
                 <h2>Recent Messages</h2>
-                <button class="close-button" id="closeCatchUp">×</button>
+                <div class="catch-up-controls">
+                    <button id="playCatchUp" class="control-button play">▶️</button>
+                    <button id="stopCatchUp" class="control-button stop" style="display: none">⏹️</button>
+                    <button class="close-button" id="closeCatchUp">×</button>
+                </div>
             </div>
             <div class="messages-list" id="messagesList">
                 <!-- Messages will be added here dynamically -->

@@ -285,6 +285,18 @@ class HollerApp {
         });
         div.appendChild(muteButton);
 
+        // Add click listener for the whole participant card
+        div.addEventListener('click', async () => {
+            if (!this.mutedUsers.has(username)) {
+                const response = await fetch('/api/messages/recent');
+                const messages = await response.json();
+                const lastMessage = messages.find(msg => msg.username === username);
+                if (lastMessage) {
+                    this.playMessage(lastMessage.id, username);
+                }
+            }
+        });
+
         document.getElementById('participants').appendChild(div);
     }
 
@@ -464,6 +476,8 @@ class HollerApp {
         const catchUpButton = document.getElementById('catchUpButton');
         const modal = document.getElementById('catchUpModal');
         const closeButton = document.getElementById('closeCatchUp');
+        const playButton = document.getElementById('playCatchUp');
+        const stopButton = document.getElementById('stopCatchUp');
 
         catchUpButton.addEventListener('click', () => {
             this.loadRecentMessages();
@@ -475,12 +489,44 @@ class HollerApp {
             this.stopCatchUp();
         });
 
+        playButton.addEventListener('click', () => {
+            this.startCatchUp();
+            playButton.style.display = 'none';
+            stopButton.style.display = 'inline-block';
+        });
+
+        stopButton.addEventListener('click', () => {
+            this.stopCatchUp();
+            stopButton.style.display = 'none';
+            playButton.style.display = 'inline-block';
+        });
+
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
                 this.stopCatchUp();
             }
         });
+    }
+
+    humanizeTime(timestamp) {
+        const now = new Date();
+        const date = new Date(timestamp);
+        const diff = now - date;
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+
+        if (days > 0) {
+            return `${days}d ago`;
+        } else if (hours > 0) {
+            return `${hours}h ago`;
+        } else if (minutes > 0) {
+            return `${minutes}m ago`;
+        } else {
+            return 'just now';
+        }
     }
 
     async loadRecentMessages() {
@@ -491,7 +537,8 @@ class HollerApp {
             const messagesList = document.getElementById('messagesList');
             messagesList.innerHTML = '';
 
-            messages.forEach(msg => {
+            // Reverse the array to show latest messages at the bottom
+            messages.reverse().forEach(msg => {
                 const div = document.createElement('div');
                 div.className = 'message-item';
                 div.dataset.messageId = msg.id;
@@ -509,7 +556,8 @@ class HollerApp {
 
                 const time = document.createElement('div');
                 time.className = 'message-time';
-                time.textContent = new Date(msg.timestamp).toLocaleString();
+                time.textContent = this.humanizeTime(msg.timestamp);
+                time.title = new Date(msg.timestamp).toLocaleString(); // Full timestamp on hover
 
                 info.appendChild(username);
                 info.appendChild(time);
@@ -517,53 +565,79 @@ class HollerApp {
                 div.appendChild(avatar);
                 div.appendChild(info);
 
-                div.addEventListener('click', () => this.startCatchUp(msg.id));
+                div.addEventListener('click', () => this.playMessage(msg.id, msg.username));
                 messagesList.appendChild(div);
             });
+
+            // Scroll to bottom to show latest messages
+            messagesList.scrollTop = messagesList.scrollHeight;
         } catch (err) {
             console.error('Error loading messages:', err);
         }
     }
 
-    async startCatchUp(messageId) {
-        if (this.isPlayingCatchUp) {
-            this.stopCatchUp();
+    async playMessage(messageId, username) {
+        if (this.isPlayingCatchUp || this.mutedUsers.has(username)) {
             return;
         }
 
-        const messagesList = document.getElementById('messagesList');
-        const items = Array.from(messagesList.getElementsByClassName('message-item'));
-        const startIndex = items.findIndex(item => item.dataset.messageId === messageId.toString());
+        const items = document.getElementsByClassName('message-item');
+        Array.from(items).forEach(item => {
+            item.classList.remove('playing');
+            if (item.dataset.messageId === messageId.toString()) {
+                item.classList.add('playing');
+            }
+        });
+
+        try {
+            const response = await fetch(`/api/messages/audio?id=${messageId}`);
+            const blob = await response.blob();
+            await this.playAudioMessage(blob, username);
+        } catch (err) {
+            console.error('Error playing message:', err);
+        } finally {
+            Array.from(items).forEach(item => item.classList.remove('playing'));
+        }
+    }
+
+    async startCatchUp() {
+        if (this.isPlayingCatchUp) {
+            return;
+        }
 
         this.isPlayingCatchUp = true;
+        const messagesList = document.getElementById('messagesList');
+        const items = Array.from(messagesList.getElementsByClassName('message-item'));
 
-        for (let i = startIndex; i >= 0 && this.isPlayingCatchUp; i--) {
+        for (let i = 0; i < items.length && this.isPlayingCatchUp; i++) {
             const item = items[i];
             const msgId = item.dataset.messageId;
+            const username = item.querySelector('.message-username').textContent;
 
-            // Remove playing class from all items
-            items.forEach(it => it.classList.remove('playing'));
-            // Add playing class to current item
-            item.classList.add('playing');
+            if (!this.mutedUsers.has(username)) {
+                items.forEach(it => it.classList.remove('playing'));
+                item.classList.add('playing');
 
-            try {
-                const response = await fetch(`/api/messages/audio?id=${msgId}`);
-                const blob = await response.blob();
-                await this.playAudioMessage(blob, item.querySelector('.message-username').textContent);
-                await new Promise(resolve => setTimeout(resolve, 500)); // 500ms pause
-            } catch (err) {
-                console.error('Error playing message:', err);
+                // Ensure the playing message is visible
+                item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                try {
+                    const response = await fetch(`/api/messages/audio?id=${msgId}`);
+                    const blob = await response.blob();
+                    await this.playAudioMessage(blob, username);
+                    await new Promise(resolve => setTimeout(resolve, 500)); // 500ms pause
+                } catch (err) {
+                    console.error('Error playing message:', err);
+                }
             }
         }
 
         this.isPlayingCatchUp = false;
         items.forEach(item => item.classList.remove('playing'));
-    }
 
-    stopCatchUp() {
-        this.isPlayingCatchUp = false;
-        const items = document.getElementsByClassName('message-item');
-        Array.from(items).forEach(item => item.classList.remove('playing'));
+        // Reset UI
+        document.getElementById('stopCatchUp').style.display = 'none';
+        document.getElementById('playCatchUp').style.display = 'inline-block';
     }
 }
 

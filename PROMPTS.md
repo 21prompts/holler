@@ -142,3 +142,11 @@ Let's focus on the UI:
 ## Prompt 15
 
 Let's add a "Catch up" view to show chronological list of recent 10 messages. Each message should have the avatar of the sender, the username. When clicked, use the same websocket connection to play the message, highlighting the avatar of the sender. Take a 500ms pause before playing the next message until the latest message is played or the user stops the playback.
+
+## Prompt 16
+
+- List the catch up messages in reverse chronological order. The latest message should be at the bottom.
+- Add a "Play" button to start playing the catch up messages.
+- Display humanized time of the message in the catch up view.
+- Add a "Stop" button to stop the playback.
+- Also play the message when the user clicks on the name or avatar in the participant list.

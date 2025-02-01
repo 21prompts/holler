@@ -260,6 +260,8 @@ body {
         inset 0 1px 1px rgba(255, 255, 255, 0.1);
     position: relative;
     /* For mute button positioning */
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
 @keyframes bounce {
@@ -335,6 +337,10 @@ body {
 .participant.speaking .participant-name {
     font-size: 1.3em;
     transition: font-size 0.2s ease-out;
+}
+
+.participant:hover:not(.muted) {
+    transform: scale(1.02);
 }
 
 .participant-avatar {
@@ -466,6 +472,9 @@ body {
 .messages-list {
     overflow-y: auto;
     padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
 .message-item {
@@ -503,6 +512,26 @@ body {
 
 .message-item.playing .message-time {
     color: rgba(255, 255, 255, 0.8);
+}
+
+.catch-up-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.control-button {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.control-button:hover {
+    background: var(--shadow-color);
 }
 
 @media (max-width: 768px) {
