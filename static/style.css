@@ -73,13 +73,95 @@ body {
     width: 32px;
     height: 32px;
     min-width: 32px;
-    /* Prevent squishing */
     min-height: 32px;
+    display: block;
+    /* Prevent inline SVG spacing issues */
 }
 
 .toolbar-avatar text {
     font-size: 16px;
     /* Adjust font size for toolbar avatar */
+}
+
+.status-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-led {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ccc;
+    position: relative;
+}
+
+.status-led::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    opacity: 0.6;
+    filter: blur(2px);
+    transition: all 0.3s ease;
+}
+
+.status-led.connected {
+    background: #2ecc71;
+}
+
+.status-led.connected::after {
+    background: #2ecc71;
+}
+
+.status-led.disconnected {
+    background: #e74c3c;
+}
+
+.status-led.disconnected::after {
+    background: #e74c3c;
+}
+
+.status-led.connecting {
+    background: #f1c40f;
+    animation: pulse 1.5s infinite;
+}
+
+.status-led.connecting::after {
+    background: #f1c40f;
+    animation: glow 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes glow {
+    0% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 0.6;
+    }
 }
 
 .context-menu {

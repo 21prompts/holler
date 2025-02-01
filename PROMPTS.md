@@ -120,3 +120,8 @@ Let's focus on the UI:
 
 - The icon next to username in toolbar should be resized appropriately.
 - When a username is changed, broadcast the change to all participants.
+
+### Prompt 12
+
+- The svg avatar is too big for the toolbar and overflows. Let's fix this.
+- Add a colored, glowing led-like indicator next to connection status and change color to red when connection is lost, yellow when reconnecting and steady green when connected.

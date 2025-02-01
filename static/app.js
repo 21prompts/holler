@@ -228,7 +228,21 @@ class HollerApp {
     }
 
     updateStatus(status) {
-        document.getElementById('status').textContent = status;
+        const statusEl = document.getElementById('status');
+        const statusLed = document.getElementById('statusLed');
+        statusEl.textContent = status;
+
+        // Remove all status classes
+        statusLed.classList.remove('connected', 'disconnected', 'connecting');
+
+        // Add appropriate class based on status
+        if (status === 'Connected') {
+            statusLed.classList.add('connected');
+        } else if (status === 'Disconnected') {
+            statusLed.classList.add('disconnected');
+        } else {
+            statusLed.classList.add('connecting');
+        }
     }
 
     updateParticipants(participants) {
@@ -241,11 +255,13 @@ class HollerApp {
         });
     }
 
-    createSVGAvatar(username) {
+    createSVGAvatar(username, isToolbar = false) {
         const color = this.getUserColor(username);
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('class', 'participant-avatar');
+        svg.setAttribute('class', isToolbar ? 'toolbar-avatar' : 'participant-avatar');
         svg.setAttribute('viewBox', '0 0 60 60');
+        svg.setAttribute('width', '100%');
+        svg.setAttribute('height', '100%');
 
         const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         circle.setAttribute('cx', '30');
@@ -258,7 +274,7 @@ class HollerApp {
         text.setAttribute('y', '38');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('fill', 'white');
-        text.setAttribute('font-size', '24');
+        text.setAttribute('font-size', isToolbar ? '24' : '28');
         text.textContent = username[0].toUpperCase();
 
         svg.appendChild(circle);
@@ -450,9 +466,10 @@ class HollerApp {
 
     updateUserInfo(user) {
         document.getElementById('username').textContent = user.username;
-        const avatar = this.createSVGAvatar(user.username);
+        const avatar = this.createSVGAvatar(user.username, true);
         const toolbarAvatar = document.getElementById('toolbarAvatar');
-        toolbarAvatar.innerHTML = avatar.innerHTML;
+        toolbarAvatar.innerHTML = '';
+        toolbarAvatar.appendChild(avatar);
     }
 }
 
