@@ -50,21 +50,35 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Use a proper session key or generate one if not set
+	sessionKey := os.Getenv("SESSION_KEY")
+	if sessionKey == "" {
+		sessionKey = "holler-default-key-change-in-production"
+	}
+
 	server := &Server{
 		db: db,
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool { return true },
 		},
-		store: sessions.NewCookieStore([]byte(os.Getenv("SESSION_KEY"))),
+		store: sessions.NewCookieStore([]byte(sessionKey)),
+	}
+
+	// Configure session store
+	server.store.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   86400 * 7, // 7 days
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
 	}
 
 	// Static files
 	http.Handle("/", http.FileServer(http.Dir("static")))
 
-	// API endpoints
-	http.HandleFunc("/api/register", server.handleRegister)
-	http.HandleFunc("/api/login", server.handleLogin)
-	http.HandleFunc("/api/session", server.checkSession)
+	// API endpoints with CORS middleware
+	http.HandleFunc("/api/register", server.corsMiddleware(server.handleRegister))
+	http.HandleFunc("/api/login", server.corsMiddleware(server.handleLogin))
+	http.HandleFunc("/api/session", server.corsMiddleware(server.checkSession))
 	http.HandleFunc("/ws", server.handleWebSocket)
 
 	log.Println("Server starting on :8080")
@@ -149,16 +163,27 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) checkSession(w http.ResponseWriter, r *http.Request) {
-	session, _ := s.store.Get(r, "holler-session")
-	if userID, ok := session.Values["userID"].(int64); ok {
-		var user User
-		err := s.db.QueryRow("SELECT id, username FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username)
-		if err == nil {
-			json.NewEncoder(w).Encode(user)
-			return
-		}
+	session, err := s.store.Get(r, "holler-session")
+	if err != nil {
+		http.Error(w, "Session error", http.StatusUnauthorized)
+		return
 	}
-	http.Error(w, "No session", http.StatusUnauthorized)
+
+	userID, ok := session.Values["userID"].(int64)
+	if !ok {
+		http.Error(w, "No session", http.StatusUnauthorized)
+		return
+	}
+
+	var user User
+	err = s.db.QueryRow("SELECT id, username FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username)
+	if err != nil {
+		http.Error(w, "Invalid session", http.StatusUnauthorized)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(user)
 }
 
 func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
@@ -205,6 +230,22 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 				return true
 			})
 		}
+	}
+}
+
+func (s *Server) corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		next(w, r)
 	}
 }
 

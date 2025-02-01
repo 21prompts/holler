@@ -55,3 +55,19 @@ The login and register buttons   have stopped working, let's investogate what ha
 We want to use exponential backoff for reconnecting to the websocket server. Let's implement this in app.js. Display the status of the connection in the statusBar.
 
 The app still demands login after page reload, we need to investigate our code for the cause and fix it.
+
+## Prompt 5
+
+The browser console shows a 401 Unauthorized error when we try to get the session. Let's investigate the cause and fix it.
+
+```
+GET
+ http://127.0.0.1:8080/api/session
+Status
+401
+Unauthorized
+VersionHTTP/1.1
+Transferred171 B (11 B size)
+Referrer Policystrict-origin-when-cross-origin
+DNS ResolutionSystem
+```
