@@ -4,6 +4,7 @@ class HollerApp {
         this.mediaRecorder = null;
         this.audioChunks = [];
         this.audioContext = null;
+        this.setupAuthUI();  // Set up auth UI immediately
         this.checkSession();
     }
 
@@ -22,7 +23,15 @@ class HollerApp {
         }
     }
 
-    setupUI() {
+    setupAuthUI() {
+        this.loginButton = document.getElementById('loginButton');
+        this.registerButton = document.getElementById('registerButton');
+
+        this.loginButton.addEventListener('click', () => this.login());
+        this.registerButton.addEventListener('click', () => this.register());
+    }
+
+    setupAppUI() {
         this.pttButton = document.getElementById('pttButton');
         this.pttButton.addEventListener('mousedown', () => this.startRecording());
         this.pttButton.addEventListener('mouseup', () => this.stopRecording());
@@ -34,12 +43,6 @@ class HollerApp {
             e.preventDefault();
             this.stopRecording();
         });
-
-        this.loginButton = document.getElementById('loginButton');
-        this.registerButton = document.getElementById('registerButton');
-
-        this.loginButton.addEventListener('click', () => this.login());
-        this.registerButton.addEventListener('click', () => this.register());
 
         document.getElementById('startButton').addEventListener('click', () => {
             this.initializeAudio();
@@ -175,7 +178,7 @@ class HollerApp {
         document.getElementById('username').textContent = user.username;
         document.getElementById('authOverlay').style.display = 'none';
         document.getElementById('startModal').style.display = 'flex';
-        this.setupUI();
+        this.setupAppUI();  // Only set up app UI after login
         this.connectWebSocket(user.username);
     }
 }

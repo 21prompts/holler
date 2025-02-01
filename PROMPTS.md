@@ -45,3 +45,7 @@ We have few issues to address:
 - The app is not responsive. Let's fix this by adding a media query for mobile devices.
 - We need to try starting the audio context only after first interaction with the app. We will fix this with two paths:
   - If user is logged in, show a "Start" button in a modal dialog. Here, use the click event to start the audio context.
+
+## Prompt 3
+
+The login and register buttons   have stopped working, let's investogate what happened and fix it.
