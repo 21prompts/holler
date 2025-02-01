@@ -49,6 +49,12 @@ type AudioMessage struct {
 	Audio    []byte `json:"audio"`
 }
 
+type UsernameChangeMessage struct {
+	Type        string `json:"type"`
+	OldUsername string `json:"oldUsername"`
+	NewUsername string `json:"newUsername"`
+}
+
 func main() {
 	db, err := sql.Open("sqlite", "holler.db")
 	if err != nil {
@@ -326,15 +332,40 @@ func (s *Server) handleChangeUsername(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	oldUsername := session.Values["username"].(string)
 	_, err := s.db.Exec("UPDATE users SET username = ? WHERE id = ?", data.Username, userID)
 	if err != nil {
 		http.Error(w, "Username already taken", http.StatusConflict)
 		return
 	}
 
+	// Broadcast username change
+	changeMsg := UsernameChangeMessage{
+		Type:        "usernameChange",
+		OldUsername: oldUsername,
+		NewUsername: data.Username,
+	}
+	msgJSON, _ := json.Marshal(changeMsg)
+	s.clients.Range(func(k, v interface{}) bool {
+		client := k.(*Client)
+		client.conn.WriteMessage(websocket.TextMessage, msgJSON)
+		return true
+	})
+
 	session.Values["username"] = data.Username
 	session.Save(r, w)
 	json.NewEncoder(w).Encode(User{ID: userID, Username: data.Username})
+
+	// Update connected client's username and broadcast new participant list
+	s.clients.Range(func(k, v interface{}) bool {
+		client := k.(*Client)
+		if client.user.ID == userID {
+			client.user.Username = data.Username
+			s.broadcastParticipants()
+			return false
+		}
+		return true
+	})
 }
 
 func (s *Server) handleChangePassword(w http.ResponseWriter, r *http.Request) {

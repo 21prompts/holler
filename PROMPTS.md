@@ -115,3 +115,8 @@ Let's focus on the UI:
 - Let's add the same avatar as in user list next to the username in toolbar.
 - Pressing the avatar or username should open context menu with options: "Change Avatar", "Change Username", "Change Password", "Logout".
 - Implement the context menu with the above options and ensure they work as expected in frontend and backend.
+
+### Prompt 11
+
+- The icon next to username in toolbar should be resized appropriately.
+- When a username is changed, broadcast the change to all participants.

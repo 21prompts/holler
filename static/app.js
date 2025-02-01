@@ -166,10 +166,16 @@ class HollerApp {
             } else {
                 try {
                     const message = JSON.parse(event.data);
-                    if (message.type === 'participants') {
-                        this.updateParticipants(message.participants);
-                    } else if (message.type === 'speaker') {
-                        currentSpeaker = message.username;
+                    switch (message.type) {
+                        case 'participants':
+                            this.updateParticipants(message.participants);
+                            break;
+                        case 'speaker':
+                            currentSpeaker = message.username;
+                            break;
+                        case 'usernameChange':
+                            this.handleUsernameChange(message.oldUsername, message.newUsername);
+                            break;
                     }
                 } catch (e) {
                     console.error('Failed to parse message:', e);
@@ -186,6 +192,27 @@ class HollerApp {
             this.updateStatus('Connection Error');
             console.error('WebSocket error:', error);
         };
+    }
+
+    handleUsernameChange(oldUsername, newUsername) {
+        // Update participant display if needed
+        const container = document.getElementById('participants');
+        const elements = container.getElementsByClassName('participant');
+
+        for (const element of elements) {
+            const nameEl = element.querySelector('.participant-name');
+            if (nameEl && nameEl.textContent === oldUsername) {
+                nameEl.textContent = newUsername;
+                const avatar = element.querySelector('.participant-avatar');
+                avatar.innerHTML = this.createSVGAvatar(newUsername).innerHTML;
+                break;
+            }
+        }
+
+        // If it's the current user, update the toolbar
+        if (document.getElementById('username').textContent === oldUsername) {
+            this.updateUserInfo({ username: newUsername });
+        }
     }
 
     scheduleReconnect() {

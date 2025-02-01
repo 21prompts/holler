@@ -72,6 +72,14 @@ body {
 .toolbar-avatar {
     width: 32px;
     height: 32px;
+    min-width: 32px;
+    /* Prevent squishing */
+    min-height: 32px;
+}
+
+.toolbar-avatar text {
+    font-size: 16px;
+    /* Adjust font size for toolbar avatar */
 }
 
 .context-menu {
