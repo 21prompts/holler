@@ -166,7 +166,7 @@ class HollerApp {
     }
 
     connectWebSocket(username) {
-        this.ws = new WebSocket(`ws://${location.host}/ws?username=${username}`);
+        this.ws = new WebSocket(`//${location.host}/ws?username=${username}`);
         this.updateStatus('Connecting...');
         let currentSpeaker = null;
 
