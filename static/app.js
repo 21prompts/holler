@@ -14,6 +14,7 @@ class HollerApp {
         this.mutedUsers = new Set();
         this.isPlayingCatchUp = false;
         this.setupCatchUpUI();
+        this.audioInitialized = false;
     }
 
     async checkSession() {
@@ -54,19 +55,34 @@ class HollerApp {
             this.stopRecording();
         });
 
-        document.getElementById('startButton').addEventListener('click', () => {
-            this.initializeAudio();
+        document.getElementById('startButton').addEventListener('click', async () => {
+            await this.initializeAudio();
             document.getElementById('startModal').style.display = 'none';
         });
     }
 
     async initializeAudio() {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        await this.audioContext.resume();
+        if (this.audioInitialized) return;
+
+        try {
+            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            await this.audioContext.resume();
+            this.audioInitialized = true;
+
+            // Show main content and action bar only after audio is initialized
+            document.getElementById('participants').style.display = 'grid';
+            document.getElementById('actionBar').style.display = 'flex';
+
+            // Update layout
+            document.body.classList.add('app-ready');
+        } catch (err) {
+            console.error('Error initializing audio:', err);
+            alert('Failed to initialize audio. Please try again.');
+        }
     }
 
     async startRecording() {
-        if (!this.audioContext) {
+        if (!this.audioInitialized) {
             await this.initializeAudio();
         }
         try {
@@ -331,8 +347,13 @@ class HollerApp {
     onLoginSuccess(user) {
         this.updateUserInfo(user);
         document.getElementById('authOverlay').style.display = 'none';
+
+        // Hide main content and action bar initially
+        document.getElementById('participants').style.display = 'none';
+        document.getElementById('actionBar').style.display = 'none';
+
         document.getElementById('startModal').style.display = 'flex';
-        this.setupAppUI();  // Only set up app UI after login
+        this.setupAppUI();
         this.connectWebSocket(user.username);
     }
 

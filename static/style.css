@@ -79,7 +79,7 @@ body {
     color: var(--text-primary);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    z-index: 100;
+    z-index: 1500;
 }
 
 .user-info {
@@ -233,6 +233,7 @@ body {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
     gap: 24px;
     justify-items: center;
+    transition: opacity 0.3s ease-out;
 }
 
 .actionBar {
@@ -248,6 +249,13 @@ body {
     justify-content: center;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    transition: opacity 0.3s ease-out;
+}
+
+body:not(.app-ready) .content,
+body:not(.app-ready) .actionBar {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .ptt-button {
@@ -416,7 +424,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
     animation: fadeIn 0.3s ease-out;
 }
 
@@ -466,7 +474,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 2000;
     animation: fadeIn 0.3s ease-out;
 }
 
@@ -503,7 +511,7 @@ body {
     right: 0;
     bottom: 0;
     background: var(--overlay-bg);
-    z-index: 1001;
+    z-index: 2000;
     align-items: center;
     justify-content: center;
     animation: fadeIn 0.3s ease-out;

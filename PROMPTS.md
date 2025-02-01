@@ -154,3 +154,7 @@ Let's add a "Catch up" view to show chronological list of recent 10 messages. Ea
 ## Prompt 17
 
 Let's review our stylesheet and ensure we have a consistent design across the app. We want to ensure the app looks good on mobile and desktop. Keep the light and dark themes and ensure the app is responsive. The login and register pages should also be responsive and have the same theme as the main app.
+
+## Prompt 18
+
+Before the start button modal is displayed, there's a flash of controls below. Let's fix this by ensuring the controls are hidden until the audio context is started.
