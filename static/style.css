@@ -54,6 +54,59 @@ body {
     -webkit-backdrop-filter: blur(10px);
 }
 
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.user-info:hover {
+    background: var(--shadow-color);
+}
+
+.toolbar-avatar {
+    width: 32px;
+    height: 32px;
+}
+
+.context-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    min-width: 200px;
+    padding: 8px 0;
+    z-index: 1000;
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.context-menu.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    color: var(--text-primary);
+    transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+    background: var(--shadow-color);
+}
+
 .content {
     margin-top: 60px;
     margin-bottom: 120px;

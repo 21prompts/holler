@@ -91,6 +91,9 @@ func main() {
 	http.HandleFunc("/api/login", server.corsMiddleware(server.handleLogin))
 	http.HandleFunc("/api/session", server.corsMiddleware(server.checkSession))
 	http.HandleFunc("/ws", server.handleWebSocket)
+	http.HandleFunc("/api/settings/username", server.corsMiddleware(server.handleChangeUsername))
+	http.HandleFunc("/api/settings/password", server.corsMiddleware(server.handleChangePassword))
+	http.HandleFunc("/api/logout", server.corsMiddleware(server.handleLogout))
 
 	log.Println("Server starting on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
@@ -300,6 +303,84 @@ func (s *Server) corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		next(w, r)
 	}
+}
+
+func (s *Server) handleChangeUsername(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	session, _ := s.store.Get(r, "holler-session")
+	userID, ok := session.Values["userID"].(int64)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var data struct {
+		Username string `json:"username"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	_, err := s.db.Exec("UPDATE users SET username = ? WHERE id = ?", data.Username, userID)
+	if err != nil {
+		http.Error(w, "Username already taken", http.StatusConflict)
+		return
+	}
+
+	session.Values["username"] = data.Username
+	session.Save(r, w)
+	json.NewEncoder(w).Encode(User{ID: userID, Username: data.Username})
+}
+
+func (s *Server) handleChangePassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	session, _ := s.store.Get(r, "holler-session")
+	userID, ok := session.Values["userID"].(int64)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var data struct {
+		CurrentPassword string `json:"currentPassword"`
+		NewPassword     string `json:"newPassword"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var currentHash []byte
+	err := s.db.QueryRow("SELECT password_hash FROM users WHERE id = ?", userID).Scan(&currentHash)
+	if err != nil || !checkPasswordHash(data.CurrentPassword, currentHash) {
+		http.Error(w, "Invalid current password", http.StatusUnauthorized)
+		return
+	}
+
+	newHash := hashPassword(data.NewPassword)
+	_, err = s.db.Exec("UPDATE users SET password_hash = ? WHERE id = ?", newHash, userID)
+	if err != nil {
+		http.Error(w, "Failed to update password", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
+	session, _ := s.store.Get(r, "holler-session")
+	session.Options.MaxAge = -1
+	session.Save(r, w)
+	w.WriteHeader(http.StatusOK)
 }
 
 func hashPassword(password string) []byte {

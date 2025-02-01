@@ -10,6 +10,7 @@ class HollerApp {
         this.maxReconnectDelay = 30000; // Max 30 seconds
         this.participants = new Set();
         this.currentSpeaker = null;
+        this.setupContextMenu();
     }
 
     async checkSession() {
@@ -263,7 +264,7 @@ class HollerApp {
     }
 
     onLoginSuccess(user) {
-        document.getElementById('username').textContent = user.username;
+        this.updateUserInfo(user);
         document.getElementById('authOverlay').style.display = 'none';
         document.getElementById('startModal').style.display = 'flex';
         this.setupAppUI();  // Only set up app UI after login
@@ -323,6 +324,108 @@ class HollerApp {
             URL.revokeObjectURL(url);
             throw err;
         }
+    }
+
+    setupContextMenu() {
+        const userInfo = document.getElementById('userInfo');
+        const contextMenu = document.getElementById('contextMenu');
+
+        userInfo.addEventListener('click', (e) => {
+            e.stopPropagation();
+            contextMenu.classList.toggle('visible');
+        });
+
+        document.addEventListener('click', () => {
+            contextMenu.classList.remove('visible');
+        });
+
+        contextMenu.addEventListener('click', async (e) => {
+            const action = e.target.dataset.action;
+            if (!action) return;
+
+            switch (action) {
+                case 'changeAvatar':
+                    await this.changeAvatar();
+                    break;
+                case 'changeUsername':
+                    await this.changeUsername();
+                    break;
+                case 'changePassword':
+                    await this.changePassword();
+                    break;
+                case 'logout':
+                    await this.logout();
+                    break;
+            }
+        });
+    }
+
+    async changeUsername() {
+        const newUsername = prompt('Enter new username:');
+        if (!newUsername) return;
+
+        try {
+            const response = await fetch('/api/settings/username', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ username: newUsername })
+            });
+
+            if (response.ok) {
+                const user = await response.json();
+                this.updateUserInfo(user);
+            } else {
+                alert('Failed to change username');
+            }
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }
+
+    async changePassword() {
+        const currentPassword = prompt('Enter current password:');
+        const newPassword = prompt('Enter new password:');
+        if (!currentPassword || !newPassword) return;
+
+        try {
+            const response = await fetch('/api/settings/password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    currentPassword,
+                    newPassword
+                })
+            });
+
+            if (response.ok) {
+                alert('Password changed successfully');
+            } else {
+                alert('Failed to change password');
+            }
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }
+
+    async logout() {
+        try {
+            await fetch('/api/logout', {
+                method: 'POST',
+                credentials: 'include'
+            });
+            window.location.reload();
+        } catch (err) {
+            console.error('Error:', err);
+        }
+    }
+
+    updateUserInfo(user) {
+        document.getElementById('username').textContent = user.username;
+        const avatar = this.createSVGAvatar(user.username);
+        const toolbarAvatar = document.getElementById('toolbarAvatar');
+        toolbarAvatar.innerHTML = avatar.innerHTML;
     }
 }
 

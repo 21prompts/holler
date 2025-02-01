@@ -109,3 +109,9 @@ Let's focus on the UI:
 - On mobile, the PTT button should be larger.
 - Let's revisit the stylesheet and add light and dark themes.
 - Let's keep the fresh look, but add a bit of skeuomorphism to the design.
+
+### Prompt 10
+
+- Let's add the same avatar as in user list next to the username in toolbar.
+- Pressing the avatar or username should open context menu with options: "Change Avatar", "Change Username", "Change Password", "Logout".
+- Implement the context menu with the above options and ensure they work as expected in frontend and backend.
