@@ -6,6 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Holler</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Preload emojis as images to prevent layout shifts */
+        @font-face {
+            font-family: 'emoji';
+            src: local('Apple Color Emoji'),
+                local('Android Emoji'),
+                local('Segoe UI Emoji'),
+                local('Noto Color Emoji');
+            unicode-range: U+1F3A4, U+1F507;
+            /* Mic and mute emoji unicode ranges */
+        }
+    </style>
 </head>
 
 <body>

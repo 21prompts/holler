@@ -11,6 +11,7 @@ class HollerApp {
         this.participants = new Set();
         this.currentSpeaker = null;
         this.setupContextMenu();
+        this.mutedUsers = new Set();
     }
 
     async checkSession() {
@@ -285,6 +286,9 @@ class HollerApp {
     addParticipant(username) {
         const div = document.createElement('div');
         div.className = 'participant';
+        if (this.mutedUsers.has(username)) {
+            div.classList.add('muted');
+        }
 
         const avatar = this.createSVGAvatar(username);
         div.appendChild(avatar);
@@ -294,7 +298,40 @@ class HollerApp {
         nameSpan.textContent = username;
         div.appendChild(nameSpan);
 
+        const muteButton = document.createElement('button');
+        muteButton.className = 'mute-button';
+        muteButton.innerHTML = '🔇';
+        muteButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggleMute(username);
+        });
+        div.appendChild(muteButton);
+
+        const mutedIndicator = document.createElement('div');
+        mutedIndicator.className = 'muted-indicator';
+        mutedIndicator.innerHTML = '🎤';
+        div.appendChild(mutedIndicator);
+
         document.getElementById('participants').appendChild(div);
+    }
+
+    toggleMute(username) {
+        if (this.mutedUsers.has(username)) {
+            this.mutedUsers.delete(username);
+        } else {
+            this.mutedUsers.add(username);
+        }
+
+        // Update UI
+        const container = document.getElementById('participants');
+        const elements = container.getElementsByClassName('participant');
+        for (const element of elements) {
+            const nameEl = element.querySelector('.participant-name');
+            if (nameEl && nameEl.textContent === username) {
+                element.classList.toggle('muted');
+                break;
+            }
+        }
     }
 
     getUserColor(username) {
@@ -332,6 +369,10 @@ class HollerApp {
     }
 
     async playAudioMessage(blob, username) {
+        if (this.mutedUsers.has(username)) {
+            return; // Skip playing audio for muted users
+        }
+
         const audio = new Audio();
         const url = URL.createObjectURL(blob);
 

@@ -110,18 +110,26 @@ Let's focus on the UI:
 - Let's revisit the stylesheet and add light and dark themes.
 - Let's keep the fresh look, but add a bit of skeuomorphism to the design.
 
-### Prompt 10
+## Prompt 10
 
 - Let's add the same avatar as in user list next to the username in toolbar.
 - Pressing the avatar or username should open context menu with options: "Change Avatar", "Change Username", "Change Password", "Logout".
 - Implement the context menu with the above options and ensure they work as expected in frontend and backend.
 
-### Prompt 11
+## Prompt 11
 
 - The icon next to username in toolbar should be resized appropriately.
 - When a username is changed, broadcast the change to all participants.
 
-### Prompt 12
+## Prompt 12
 
 - The svg avatar is too big for the toolbar and overflows. Let's fix this.
 - Add a colored, glowing led-like indicator next to connection status and change color to red when connection is lost, yellow when reconnecting and steady green when connected.
+
+## Prompt 13
+
+- Next, let's focus on the participant list UI
+- Add a "Mute" button next to each participant's name.
+- Add required functionality to mute and unmute participants.
+- Indicate muted participants with a red "Muted" mic icon emoji next to their name
+- Finally, review the animations and prefer smooth animations that don''t change the layout of the page.
