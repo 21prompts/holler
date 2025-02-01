@@ -150,3 +150,7 @@ Let's add a "Catch up" view to show chronological list of recent 10 messages. Ea
 - Display humanized time of the message in the catch up view.
 - Add a "Stop" button to stop the playback.
 - Also play the message when the user clicks on the name or avatar in the participant list.
+
+## Prompt 17
+
+Let's review our stylesheet and ensure we have a consistent design across the app. We want to ensure the app looks good on mobile and desktop. Keep the light and dark themes and ensure the app is responsive. The login and register pages should also be responsive and have the same theme as the main app.
