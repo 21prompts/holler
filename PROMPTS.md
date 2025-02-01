@@ -94,3 +94,9 @@ Let's implement the following features:
 - [ ] Stop bouncing avatar when participant's message is done playing
 - [ ] Enlarge username to 130% when participant is speaking
 ```
+
+## Prompt 8
+
+Error playing audio: DOMException: The media resource indicated by the src attribute or assigned media provider object was not suitable.
+
+Let's ensure we preserve the binary chunks integrity.

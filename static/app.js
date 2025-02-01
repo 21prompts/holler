@@ -148,10 +148,32 @@ class HollerApp {
     connectWebSocket(username) {
         this.ws = new WebSocket(`ws://${location.host}/ws?username=${username}`);
         this.updateStatus('Connecting...');
+        let currentSpeaker = null;
 
         this.ws.onopen = () => {
             this.updateStatus('Connected');
-            this.reconnectAttempts = 0; // Reset attempts on successful connection
+            this.reconnectAttempts = 0;
+        };
+
+        this.ws.onmessage = async (event) => {
+            if (event.data instanceof Blob) {
+                // Handle binary audio data
+                if (currentSpeaker) {
+                    await this.playAudioMessage(event.data, currentSpeaker);
+                    currentSpeaker = null;
+                }
+            } else {
+                try {
+                    const message = JSON.parse(event.data);
+                    if (message.type === 'participants') {
+                        this.updateParticipants(message.participants);
+                    } else if (message.type === 'speaker') {
+                        currentSpeaker = message.username;
+                    }
+                } catch (e) {
+                    console.error('Failed to parse message:', e);
+                }
+            }
         };
 
         this.ws.onclose = () => {
@@ -162,27 +184,6 @@ class HollerApp {
         this.ws.onerror = (error) => {
             this.updateStatus('Connection Error');
             console.error('WebSocket error:', error);
-        };
-
-        this.ws.onmessage = async (event) => {
-            if (event.data instanceof Blob) {
-                const messageData = new MessageData(event.data);
-                await this.playAudioMessage(messageData.blob, messageData.username);
-            } else {
-                try {
-                    const message = JSON.parse(event.data);
-                    if (message.type === 'participants') {
-                        this.updateParticipants(message.participants);
-                    } else if (message.type === 'audio') {
-                        await this.playAudioMessage(
-                            new Blob([message.audio], { type: 'audio/webm;codecs=opus' }),
-                            message.username
-                        );
-                    }
-                } catch (e) {
-                    console.error('Failed to parse message:', e);
-                }
-            }
         };
     }
 
@@ -287,19 +288,40 @@ class HollerApp {
     }
 
     async playAudioMessage(blob, username) {
-        const audio = new Audio(URL.createObjectURL(blob));
-
-        this.setParticipantSpeaking(username, true);
-
-        audio.addEventListener('ended', () => {
-            this.setParticipantSpeaking(username, false);
-        });
+        const audio = new Audio();
+        const url = URL.createObjectURL(blob);
 
         try {
-            await audio.play();
+            this.setParticipantSpeaking(username, true);
+
+            return new Promise((resolve, reject) => {
+                audio.src = url;
+
+                audio.onended = () => {
+                    this.setParticipantSpeaking(username, false);
+                    URL.revokeObjectURL(url);
+                    resolve();
+                };
+
+                audio.onerror = (e) => {
+                    console.error('Audio playback error:', e);
+                    this.setParticipantSpeaking(username, false);
+                    URL.revokeObjectURL(url);
+                    reject(e);
+                };
+
+                audio.play().catch(err => {
+                    console.error('Error playing audio:', err);
+                    this.setParticipantSpeaking(username, false);
+                    URL.revokeObjectURL(url);
+                    reject(err);
+                });
+            });
         } catch (err) {
-            console.error('Error playing audio:', err);
+            console.error('Error setting up audio:', err);
             this.setParticipantSpeaking(username, false);
+            URL.revokeObjectURL(url);
+            throw err;
         }
     }
 }

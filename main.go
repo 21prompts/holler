@@ -240,24 +240,19 @@ func (s *Server) handleWebSocket(w http.ResponseWriter, r *http.Request) {
 				continue
 			}
 
-			// Create audio message with username
-			audioMsg := AudioMessage{
-				Type:     "audio",
-				Username: user.Username,
-				Audio:    p,
+			// Send username as a text message first
+			userMsg := map[string]string{
+				"type":     "speaker",
+				"username": user.Username,
 			}
-
-			msgJSON, err := json.Marshal(audioMsg)
-			if err != nil {
-				log.Printf("Error marshaling audio message: %v", err)
-				continue
-			}
+			userJSON, _ := json.Marshal(userMsg)
 
 			// Broadcast to other clients
 			s.clients.Range(func(k, v interface{}) bool {
 				other := k.(*Client)
 				if other != client {
-					other.conn.WriteMessage(websocket.TextMessage, msgJSON)
+					other.conn.WriteMessage(websocket.TextMessage, userJSON)
+					other.conn.WriteMessage(websocket.BinaryMessage, p)
 				}
 				return true
 			})
