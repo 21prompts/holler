@@ -1,7 +1,28 @@
 :root {
+    /* Light theme */
     --primary-color: #2196f3;
     --accent-color: #1976d2;
     --bg-color: #f5f5f5;
+    --surface-color: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --button-gradient: linear-gradient(to bottom, #2196f3, #1976d2);
+    --button-pressed: linear-gradient(to bottom, #1976d2, #1565c0);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --primary-color: #64b5f6;
+        --accent-color: #42a5f5;
+        --bg-color: #121212;
+        --surface-color: #242424;
+        --text-primary: #ffffff;
+        --text-secondary: #bbbbbb;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        --button-gradient: linear-gradient(to bottom, #42a5f5, #1e88e5);
+        --button-pressed: linear-gradient(to bottom, #1e88e5, #1976d2);
+    }
 }
 
 body {
@@ -12,6 +33,8 @@ body {
     height: 100vh;
     display: flex;
     flex-direction: column;
+    color: var(--text-primary);
+    background: var(--bg-color);
 }
 
 .statusBar {
@@ -20,21 +43,24 @@ body {
     left: 0;
     right: 0;
     height: 50px;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: var(--surface-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 20px;
+    color: var(--text-primary);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .content {
-    margin-top: 50px;
-    margin-bottom: 100px;
+    margin-top: 60px;
+    margin-bottom: 120px;
     padding: 20px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 24px;
     justify-items: center;
 }
 
@@ -43,31 +69,38 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    height: 100px;
-    background: white;
-    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+    height: 120px;
+    background: var(--surface-color);
+    box-shadow: 0 -2px 8px var(--shadow-color);
     display: flex;
     align-items: center;
     justify-content: center;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .ptt-button {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     border: none;
-    background: var(--primary-color);
+    background: var(--button-gradient);
     color: white;
     font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow:
+        0 4px 8px var(--shadow-color),
+        inset 0 2px 3px rgba(255, 255, 255, 0.2),
+        inset 0 -2px 3px rgba(0, 0, 0, 0.2);
     transform: translateY(0);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
 }
 
 .ptt-button:active {
     transform: translateY(4px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    background: var(--accent-color);
+    background: var(--button-pressed);
+    box-shadow:
+        0 2px 4px var(--shadow-color),
+        inset 0 2px 3px rgba(0, 0, 0, 0.2);
 }
 
 .participant {
@@ -75,7 +108,13 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    width: 100px;
+    width: 120px;
+    padding: 10px;
+    background: var(--surface-color);
+    border-radius: 12px;
+    box-shadow:
+        0 2px 4px var(--shadow-color),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
 @keyframes bounce {
@@ -104,17 +143,20 @@ body {
     height: 60px;
     border-radius: 50%;
     transition: transform 0.2s ease-out;
+    filter: drop-shadow(0 2px 4px var(--shadow-color));
 }
 
 .participant-name {
-    font-size: 0.9em;
+    font-size: 0.95em;
     text-align: center;
-    color: #333;
+    color: var(--text-primary);
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     transition: font-size 0.2s ease-out;
+    margin-top: 8px;
+    padding: 0 4px;
 }
 
 .auth-overlay {
@@ -165,22 +207,46 @@ body {
 
 @media (max-width: 768px) {
     .content {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        gap: 10px;
-        padding: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 16px;
+        padding: 16px;
+        margin-bottom: 110px;
     }
 
     .ptt-button {
-        width: 70px;
-        height: 70px;
+        width: 100px;
+        height: 100px;
     }
 
     .participant {
-        width: 50px;
-        height: 50px;
+        width: 100px;
     }
 
     .actionBar {
-        height: 80px;
+        height: 110px;
+    }
+
+    .participant-name {
+        font-size: 0.85em;
+        line-height: 1.2;
+        max-width: 90px;
+        margin: 8px auto 0;
+    }
+}
+
+/* Small phones */
+@media (max-width: 360px) {
+    .content {
+        grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+        gap: 12px;
+    }
+
+    .participant {
+        width: 90px;
+    }
+
+    .participant-name {
+        font-size: 0.8em;
+        max-width: 80px;
     }
 }

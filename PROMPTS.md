@@ -100,3 +100,12 @@ Let's implement the following features:
 Error playing audio: DOMException: The media resource indicated by the src attribute or assigned media provider object was not suitable.
 
 Let's ensure we preserve the binary chunks integrity.
+
+## Prompt 9
+
+Let's focus on the UI:
+
+- On mobile, the names are getting cut off.
+- On mobile, the PTT button should be larger.
+- Let's revisit the stylesheet and add light and dark themes.
+- Let's keep the fresh look, but add a bit of skeuomorphism to the design.
